@@ -7,15 +7,15 @@
         import Vector from './Vector.js'
         import Lightning from './lightning.js'
 
-        var canvas, target, ctx, lt, draw, points = [];
+        var canvas, target, ctx, lt, draw, lightningSources = [];
         document.addEventListener("DOMContentLoaded", function () {
             canvas = document.getElementById("board");
             ctx = canvas.getContext("2d");
-        
-            //canvas events   
+
+            //canvas events
             canvas.addEventListener("mousedown", e => {
                 draw = true;
-                target = new Vector(0, 0, e.clientX - canvas.offsetLeft + document.documentElement.scrollLeft, e.clientY - canvas.offsetTop + document.documentElement.scrollTop);
+                target = buildTarget(e);
             }, false);
 
             canvas.addEventListener("mouseup", e => {
@@ -23,15 +23,12 @@
             }, false);
 
             canvas.addEventListener('mousemove', e => {
-                if (draw) {
-                    target = new Vector(0, 0, e.clientX - canvas.offsetLeft + document.documentElement.scrollLeft, e.clientY - canvas.offsetTop + document.documentElement.scrollTop);
-                }
+                if (draw) target = buildTarget(e);
             });
 
- 
             canvas.addEventListener("touchstart", e => {
                 draw = true;
-                target = new Vector(0, 0, e.touches[0].clientX - canvas.offsetLeft + document.documentElement.scrollLeft, e.touches[0].clientY - canvas.offsetTop + document.documentElement.scrollTop);
+                target = buildTarget(e);
             }, false);
 
             canvas.addEventListener("touchend", e => {
@@ -39,20 +36,39 @@
             }, false);
 
             canvas.addEventListener('touchmove', e => {
-                if (draw) {
-                    target = new Vector(0, 0, e.touches[0].clientX - canvas.offsetLeft + document.documentElement.scrollLeft, e.touches[0].clientY - canvas.offsetTop + document.documentElement.scrollTop);
-                }
+                if (draw) target = buildTarget(e);
             });
 
-
-            //Lighning sources            
-            points.push(new Vector(0, 0, canvas.width / 2, canvas.height / 2));
-            points.push(new Vector(0, 0, 20, 20));
-            points.push(new Vector(0, 0, canvas.width / 2, 20));
-            points.push(new Vector(0, 0, canvas.width - 20, 20));
-            points.push(new Vector(0, 0, 20, canvas.height - 20));
-            points.push(new Vector(0, 0, canvas.width / 2, canvas.height - 20));
-            points.push(new Vector(0, 0, canvas.width - 20, canvas.height - 20));
+            lightningSources = [
+                {
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                },
+                {
+                    x: 20,
+                    y: 20,
+                },
+                {
+                    x: canvas.width / 2,
+                    y: 20,
+                },
+                {
+                    x: canvas.width - 20,
+                    y: 20,
+                },
+                {
+                    x: 20,
+                    y: canvas.height - 20,
+                },
+                {
+                    x: canvas.width / 2,
+                    y: canvas.height - 20,
+                },
+                {
+                    x: canvas.width - 20,
+                    y: canvas.height - 20,
+                },
+            ];
 
             //control box events
             var props = document.querySelectorAll("#controlBox input");
@@ -62,6 +78,20 @@
             buidLighter();
             window.requestAnimationFrame(Animate);
         });
+
+        function buildTarget(e) {
+            if (e.touches) {
+                return {
+                    x: e.clientX - canvas.offsetLeft + document.documentElement.scrollLeft,
+                    y: e.clientY - canvas.offsetTop + document.documentElement.scrollTop,
+                };
+            } else {
+                return {
+                    x: e.clientX - canvas.offsetLeft + document.documentElement.scrollLeft,
+                    y: e.clientY - canvas.offsetTop + document.documentElement.scrollTop,
+                };
+            }
+        }
 
         function buidLighter() {
             var opt = {};
@@ -83,11 +113,11 @@
             ctx.shadowColor = null;
             ctx.fillStyle = 'rgba(0,0,0,0.3)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
+
             if (draw) {
-                points.forEach(p => {
-                    lt.Cast(ctx, p, target);
-                });
+                for (var i = 0; i < lightningSources.length; i++) {
+                    lt.Cast(ctx, lightningSources[i], target);
+                }
             }
 
             setTimeout(() => Animate(), 60);
@@ -103,7 +133,7 @@
         <input data-opt="Segments" type="range" min="5" max="100" step="1" value="40" />
         <br>
         <span>Threshold:</span><br>
-        <input data-opt="Threshold" type="range" min="0" max="1" step="0.1" value="0.5" />
+        <input data-opt="Threshold" type="range" min="0" max="500" step="10" value="250" />
         <br>
         <span>Width:</span><br>
         <input data-opt="Width" type="range" min="0" max="5" step="0.1" value="1" />
@@ -124,13 +154,13 @@
         <input data-opt="GlowColor" value="#000055" />
         <br>
         <span>Glow Width:</span><br>
-        <input data-opt="GlowWidth" type="range" min="0" max="200" step="1" value="40" />
+        <input data-opt="GlowWidth" type="range" min="0" max="50" step="1" value="10" />
         <br>
         <span>Glow Blur:</span><br>
-        <input data-opt="GlowBlur" type="range" min="0" max="400" step="1" value="100" />
+        <input data-opt="GlowBlur" type="range" min="0" max="100" step="1" value="15" />
         <br>
         <span>Glow Alpha:</span><br>
-        <input data-opt="GlowAlpha" type="range" min="0" max="50" step="1" value="30" />
+        <input data-opt="GlowAlpha" type="range" min="0" max="50" step="1" value="5" />
         <br>
 
     </div>

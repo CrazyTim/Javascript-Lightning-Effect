@@ -6,74 +6,89 @@ export default class Lightning {
         this.config = c;
     }
 
-    Cast(context, from, to) {
+    Cast(context, startPoint, endPoint, showEndCircle = true, segmentLength = 10) {
 
         context.save();
 
-        if (!from || !to) {
-            return;
+        if (!startPoint || !endPoint) return;
+
+        const v = new Vector(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+        const vLength = v.length();
+
+        // Do nothing if too far away:
+        if (this.config.Threshold) {
+          if (vLength > this.config.Threshold) return;
         }
-        //Main vector
-        var v = new Vector(from.X1, from.Y1, to.X1, to.Y1);
-        //skip cas if not close enough
-        if (this.config.Threshold && v.Length() > context.canvas.width * this.config.Threshold) {
-            return;
-        }
-        var vLen = v.Length();
-        var refv = from;
-        var lR = (vLen / context.canvas.width)
-        //count of segemnets
-        var segments = Math.floor(this.config.Segments * lR);
-        //lenth of each
-        var l = vLen / segments;
 
+        const segmentCount = Math.floor(vLength / segmentLength);
+        const segmentLengthHalf = segmentLength / 2;
+        const segmentlengthX = v.lengthX() / segmentCount;
+        const segmentlengthY = v.lengthY() / segmentCount;
 
-        for (let i = 1; i <= segments; i++) {
-            //position in the main vector
-            var dv = v.Multiply((1 / segments) * i);
+        let lastVector = new Vector(0, 0, startPoint.x, startPoint.y);
 
-            //add position noise
-            if (i != segments) {
-                dv.Y1 += l * Math.random();
-                dv.X1 += l * Math.random();
+        for (let i = 1; i <= segmentCount; i++) {
+
+            const newTo = {
+              x: v.x1 + ( segmentlengthX * i ),
+              y: v.y1 + ( segmentlengthY * i ),
+            };
+
+            // Add noise (excluding the last segment):
+            if (i != segmentCount) {
+              newTo.x += this.Random(-segmentLengthHalf, segmentLengthHalf + 1);
+              newTo.y += this.Random(-segmentLengthHalf, segmentLengthHalf + 1);
             }
 
-            //new vector for segment
-            var r = new Vector(refv.X1, refv.Y1, dv.X1, dv.Y1);
+            const thisVector = new Vector(lastVector.x2, lastVector.y2, newTo.x, newTo.y);
 
-            //background blur
+            // Draw background blur:
             if (this.config.GlowColor && this.config.GlowWidth && this.config.GlowBlur && this.config.GlowAlpha) {
-              this.Line(context, r, {
+              this.Line(context, thisVector, {
                   Color: this.config.GlowColor,
-                  With: this.config.GlowWidth * lR,
-                  Blur: this.config.GlowBlur * lR,
+                  With: this.config.GlowWidth,
+                  Blur: this.config.GlowBlur,
                   BlurColor: this.config.GlowColor,
-                  Alpha: this.Random(this.config.GlowAlpha, this.config.GlowAlpha * 2) / 100
-
+                  Alpha: this.Random(this.config.GlowAlpha, this.config.GlowAlpha * 2) / 100,
               });
             }
 
-            //main line
-            this.Line(context, r, {
+            // Draw line:
+            this.Line(context, thisVector, {
                 Color: this.config.Color,
                 With: this.config.Width,
                 Blur: this.config.Blur,
                 BlurColor: this.config.BlurColor,
-                Alpha: this.config.Alpha
+                Alpha: this.config.Alpha,
             });
-            refv = r;
+
+            lastVector = thisVector;
+
         }
 
-        this.Circle(context, to, 4, 2.5, '#fff');
-        this.Circle(context, from, 4, 2.5, '#fff');
+        this.Circle(context, endPoint, 5, 3, '#fff');
+        if (showEndCircle) this.Circle(context, startPoint, 4, 2.5, '#fff');
 
         context.restore();
 
     }
 
+    Line(context, v, c) {
+        context.beginPath();
+        context.strokeStyle = c.Color;
+        context.lineWidth = c.With;
+        context.moveTo(v.x1, v.y1);
+        context.lineTo(v.x2, v.y2);
+        context.globalAlpha = c.Alpha;
+        context.shadowBlur = c.Blur;
+        context.shadowColor = c.BlurColor;
+        context.stroke();
+    }
+
     Circle(context, p, radius, maxOffsetDistance, color) {
-        const x = this.Random(p.X1 - maxOffsetDistance, p.X1 + maxOffsetDistance);
-        const y = this.Random(p.Y1 - maxOffsetDistance, p.Y1 + maxOffsetDistance);
+        const o = maxOffsetDistance / 2;
+        const x = this.Random(p.x - o, p.x + o);
+        const y = this.Random(p.y - o, p.y + o);
         context.beginPath();
         context.arc(x, y, radius, 0, 2 * Math.PI, false);
         context.fillStyle = color;
@@ -82,21 +97,8 @@ export default class Lightning {
         context.fill();
     }
 
-    Line(context, v, c) {
-        context.beginPath();
-        context.strokeStyle = c.Color;
-        context.lineWidth = c.With;
-        context.moveTo(v.X, v.Y);
-        context.lineTo(v.X1, v.Y1);
-        context.globalAlpha = c.Alpha;
-        context.shadowBlur = c.Blur;
-        context.shadowColor = c.BlurColor;
-        context.stroke();
-    }
-
     Random(min, max) {
         return Math.floor(Math.random() * (max - min)) + min;
     }
 
 }
-
