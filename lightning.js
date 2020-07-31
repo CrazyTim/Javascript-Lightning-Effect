@@ -1,5 +1,6 @@
+import Vector from './vector.js'
 
-class Lightning {
+export default class Lightning {
 
     constructor(c) {
         this.config = c;

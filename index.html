@@ -2,9 +2,11 @@
 <html>
 
 <head>
-    <script src="./vector.js"></script>
-    <script src="./lightning.js"></script>
-    <script>
+
+    <script type='module' defer>
+        import Vector from './Vector.js'
+        import Lightning from './lightning.js'
+
         var canvas, target, ctx, lt, draw, points = [];
         document.addEventListener("DOMContentLoaded", function () {
             canvas = document.getElementById("board");
@@ -88,9 +90,7 @@
                 });
             }
 
-            setTimeout(() => {
-                this.Animate();
-            }, 60);
+            setTimeout(() => Animate(), 60);
         }
     </script>
 </head>

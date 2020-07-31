@@ -1,4 +1,4 @@
-class Vector {
+export default class Vector {
     constructor(x, y, x1, y1) {
         this.X = x;
         this.Y = y;
