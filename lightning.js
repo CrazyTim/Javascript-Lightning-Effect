@@ -64,19 +64,21 @@ export default class Lightning {
             refv = r;
         }
 
-        this.Circle(context, to, lR);
-        this.Circle(context, from, lR);
+        this.Circle(context, to, 4, 2.5, '#fff');
+        this.Circle(context, from, 4, 2.5, '#fff');
 
         context.restore();
 
     }
 
-    Circle(context, p, lR) {
+    Circle(context, p, radius, maxOffsetDistance, color) {
+        const x = this.Random(p.X1 - maxOffsetDistance, p.X1 + maxOffsetDistance);
+        const y = this.Random(p.Y1 - maxOffsetDistance, p.Y1 + maxOffsetDistance);
         context.beginPath();
-        context.arc(p.X1 + Math.random() * 10 * lR, p.Y1 + Math.random() * 10 * lR, 5, 0, 2 * Math.PI, false);
-        context.fillStyle = 'white';
-        context.shadowBlur = 100;
-        context.shadowColor = "#2319FF";
+        context.arc(x, y, radius, 0, 2 * Math.PI, false);
+        context.fillStyle = color;
+        context.shadowBlur = radius * 2;
+        context.shadowColor = color;
         context.fill();
     }
 
