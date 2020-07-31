@@ -36,19 +36,21 @@ class Lightning {
                 dv.Y1 += l * Math.random();
                 dv.X1 += l * Math.random();
             }
-            
+
             //new vector for segment
             var r = new Vector(refv.X1, refv.Y1, dv.X1, dv.Y1);
-            
-            //background blur
-            this.Line(context, r, {
-                Color: this.config.GlowColor,
-                With: this.config.GlowWidth * lR,
-                Blur: this.config.GlowBlur * lR,
-                BlurColor: this.config.GlowColor,
-                Alpha: this.Random(this.config.GlowAlpha, this.config.GlowAlpha * 2) / 100
 
-            });
+            //background blur
+            if (this.config.GlowColor && this.config.GlowWidth && this.config.GlowBlur && this.config.GlowAlpha) {
+              this.Line(context, r, {
+                  Color: this.config.GlowColor,
+                  With: this.config.GlowWidth * lR,
+                  Blur: this.config.GlowBlur * lR,
+                  BlurColor: this.config.GlowColor,
+                  Alpha: this.Random(this.config.GlowAlpha, this.config.GlowAlpha * 2) / 100
+
+              });
+            }
 
             //main line
             this.Line(context, r, {
