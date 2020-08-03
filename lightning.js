@@ -6,11 +6,18 @@ export default class Lightning {
         this.config = c;
     }
 
-    Cast(context, startPoint, endPoint, showEndCircle = true, segmentLength = 10) {
+    Cast(ctx, startPoint, endPoint, settings = {}) {
 
-        context.save();
+        ctx.save();
 
-        if (!startPoint || !endPoint) return;
+        if (typeof ctx !== 'object' ||
+          typeof startPoint !== 'object' ||
+          typeof endPoint !== 'object' ||
+          typeof settings !== 'object') return;
+
+        if (typeof settings.circleStartRadius === 'undefined') settings.circleStartRadius = 5;
+        if (typeof settings.circleEndRadius === 'undefined') settings.circleEndRadius = 5;
+        if (typeof settings.segmentLength === 'undefined') settings.segmentLength = 10;
 
         const v = new Vector(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
         const vLength = v.length();
@@ -20,8 +27,8 @@ export default class Lightning {
           if (vLength > this.config.Threshold) return;
         }
 
-        const segmentCount = Math.floor(vLength / segmentLength);
-        const segmentLengthHalf = segmentLength / 2;
+        const segmentCount = Math.floor(vLength / settings.segmentLength);
+        const segmentLengthHalf = settings.segmentLength / 2;
         const segmentlengthX = v.lengthX() / segmentCount;
         const segmentlengthY = v.lengthY() / segmentCount;
 
@@ -44,7 +51,7 @@ export default class Lightning {
 
             // Draw background blur:
             if (this.config.GlowColor && this.config.GlowWidth && this.config.GlowBlur && this.config.GlowAlpha) {
-              this.Line(context, thisVector, {
+              this.Line(ctx, thisVector, {
                   Color: this.config.GlowColor,
                   With: this.config.GlowWidth,
                   Blur: this.config.GlowBlur,
@@ -54,7 +61,7 @@ export default class Lightning {
             }
 
             // Draw line:
-            this.Line(context, thisVector, {
+            this.Line(ctx, thisVector, {
                 Color: this.config.Color,
                 With: this.config.Width,
                 Blur: this.config.Blur,
@@ -66,35 +73,36 @@ export default class Lightning {
 
         }
 
-        this.Circle(context, endPoint, 5, 3, '#fff');
-        if (showEndCircle) this.Circle(context, startPoint, 4, 2.5, '#fff');
+        this.Circle(ctx, startPoint, settings.circleStartRadius, 2.5, '#fff');
+        this.Circle(ctx, endPoint, settings.circleEndRadius, 2.5, '#fff');
 
-        context.restore();
+        ctx.restore();
 
     }
 
-    Line(context, v, c) {
-        context.beginPath();
-        context.strokeStyle = c.Color;
-        context.lineWidth = c.With;
-        context.moveTo(v.x1, v.y1);
-        context.lineTo(v.x2, v.y2);
-        context.globalAlpha = c.Alpha;
-        context.shadowBlur = c.Blur;
-        context.shadowColor = c.BlurColor;
-        context.stroke();
+    Line(ctx, v, c) {
+        ctx.beginPath();
+        ctx.strokeStyle = c.Color;
+        ctx.lineWidth = c.With;
+        ctx.moveTo(v.x1, v.y1);
+        ctx.lineTo(v.x2, v.y2);
+        ctx.globalAlpha = c.Alpha;
+        ctx.shadowBlur = c.Blur;
+        ctx.shadowColor = c.BlurColor;
+        ctx.stroke();
     }
 
-    Circle(context, p, radius, maxOffsetDistance, color) {
+    Circle(ctx, p, radius, maxOffsetDistance, color) {
+        if (!radius) return; // Don't draw circle if radius is 0.
         const o = maxOffsetDistance / 2;
         const x = this.Random(p.x - o, p.x + o);
         const y = this.Random(p.y - o, p.y + o);
-        context.beginPath();
-        context.arc(x, y, radius, 0, 2 * Math.PI, false);
-        context.fillStyle = color;
-        context.shadowBlur = radius * 2;
-        context.shadowColor = color;
-        context.fill();
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+        ctx.fillStyle = color;
+        ctx.shadowBlur = radius * 2;
+        ctx.shadowColor = color;
+        ctx.fill();
     }
 
     Random(min, max) {
